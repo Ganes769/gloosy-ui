@@ -17,3 +17,8 @@ body {
   position: "absolute";
   left: 0;
 }
+
+.signup-link:hover,
+.login-link:hover {
+  text-decoration: underline;
+}

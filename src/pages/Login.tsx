@@ -1,5 +1,4 @@
 import {
-  Autocomplete,
   Box,
   Button,
   TextField,
@@ -11,9 +10,11 @@ import OnBoardlogo from "./OnBoardlogo";
 import { z } from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signUp } from "../services/api";
+import { login } from "../services/api";
 import { useState } from "react";
 import { AxiosError } from "axios";
+import { useNavigate } from "@tanstack/react-router";
+import { loginschema } from "../schema/userScshema";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -27,38 +28,17 @@ export default function LoginPage() {
     severity: "info",
   });
 
-  const schema = z
-    .object({
-      firstName: z.string().min(1, "First Name is required"),
-      lastName: z.string().min(1, "Last Name is required"),
-      email: z.string().email("Invalid email address"),
-      password: z.string().min(8, "Password must be at least 8 characters"),
-      confirmPassword: z
-        .string()
-        .min(8, "Confirm Password must be at least 8 characters"),
-      location: z.string().min(1, "Location is required"),
-      role: z.string().min(1, "Role is required"),
-    })
-    .refine((data) => data.password === data.confirmPassword, {
-      path: ["confirmPassword"],
-      message: "Passwords do not match",
-    });
+  const navigate = useNavigate();
 
   const {
     control,
-
     handleSubmit,
     formState: { errors },
-  } = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  } = useForm<z.infer<typeof loginschema>>({
+    resolver: zodResolver(loginschema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
       email: "",
       password: "",
-      confirmPassword: "",
-      location: "",
-      role: "",
     },
   });
 
@@ -70,23 +50,18 @@ export default function LoginPage() {
   };
 
   const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
+    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
-  const onSubmit = async (data: z.infer<typeof schema>) => {
+  const onSubmit = async (data: z.infer<typeof loginschema>) => {
     setLoading(true);
     try {
-      console.log("Form submitted with data:", data);
-      const response = await signUp(data);
-      console.log(response);
-
-      // Show success message
+      const response = await login(data);
       if (response.message) {
         showSnackbar(response.message, "success");
-        // Store token if provided
         if (response.token) {
           localStorage.setItem("token", response.token);
-          console.log("Token stored:", response.token);
+          navigate({ to: "/updateProfile" });
         }
       }
     } catch (error) {
@@ -98,17 +73,8 @@ export default function LoginPage() {
           axiosError.response.data?.message || "An error occurred";
 
         switch (status) {
-          case 409:
-            if (errorMessage.includes("Email already exists")) {
-              showSnackbar("Email already exists", "error");
-            } else if (errorMessage.includes("Username already exists")) {
-              showSnackbar("Username already exists", "error");
-            } else {
-              showSnackbar(errorMessage, "error");
-            }
-            break;
           case 401:
-            showSnackbar("Invalid user credentials", "error");
+            showSnackbar("Invalid email or password", "error");
             break;
           case 400:
             const errorData = axiosError.response.data as {
@@ -133,7 +99,7 @@ export default function LoginPage() {
       } else {
         showSnackbar("Network error. Please check your connection.", "error");
       }
-      console.error("Sign up error:", error);
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
@@ -149,9 +115,8 @@ export default function LoginPage() {
         overflow: "hidden",
       }}
     >
-      {/* Left side with #2F80ED color */}
       <OnBoardlogo />
-      {/* Right side with white color */}
+
       <Box
         p={0}
         m={0}
@@ -172,138 +137,18 @@ export default function LoginPage() {
           >
             <p>Welcome</p>
             <p style={{ fontWeight: "600", color: "black", fontSize: "24px" }}>
-              Sign Up your Account
+              Login to your Account
             </p>
           </Box>
 
-          <Box>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "row",
-
-                marginTop: "20px",
-                marginBottom: "20px",
-
-                gap: "20px",
-              }}
-            >
-              <Controller
-                name="role"
-                control={control}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Button
-                    sx={{
-                      borderRadius: "30px",
-                      width: "308px",
-                      textTransform: "capitalize",
-                      fontSize: "18px",
-                    }}
-                    variant={value === "customer" ? "contained" : "outlined"}
-                    onClick={() => onChange("customer")}
-                    onBlur={onBlur}
-                  >
-                    Customer/Entrepreneur
-                  </Button>
-                )}
-              />
-              <Controller
-                name="role"
-                control={control}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <Button
-                    sx={{
-                      borderRadius: "30px",
-                      width: "308px",
-                      textTransform: "capitalize",
-                      fontSize: "18px",
-                    }}
-                    variant={value === "creator" ? "contained" : "outlined"}
-                    onClick={() => onChange("creator")}
-                    onBlur={onBlur}
-                  >
-                    UGC Content Creator
-                  </Button>
-                )}
-              />
-            </Box>
-          </Box>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: "26px" }}>
-            <Box
-              sx={{
-                width: "100%",
-                display: "flex",
-                flexDirection: "row",
-                gap: "20px",
-                marginTop: "10px",
-              }}
-            >
-              <Controller
-                name="firstName"
-                control={control}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextField
-                    color="primary"
-                    sx={{ width: "50%" }}
-                    id="outlined-basic"
-                    label="First Name"
-                    variant="outlined"
-                    size="small"
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value || ""}
-                    error={!!errors.firstName}
-                    helperText={errors.firstName?.message}
-                  />
-                )}
-              />
-
-              <Controller
-                name="lastName"
-                control={control}
-                render={({ field: { onChange, onBlur, value } }) => (
-                  <TextField
-                    color="primary"
-                    sx={{ width: "50%" }}
-                    id="filled-basic"
-                    label="Last Name"
-                    variant="outlined"
-                    size="small"
-                    onChange={onChange}
-                    onBlur={onBlur}
-                    value={value || ""}
-                    error={!!errors.firstName}
-                    helperText={errors.lastName?.message}
-                  />
-                )}
-              />
-            </Box>
-            <Controller
-              name="location"
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <Autocomplete
-                  disablePortal
-                  color="primary"
-                  size="small"
-                  sx={{ width: "100%" }}
-                  options={["UK", "Nepal"]}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Location"
-                      error={!!errors.location}
-                      helperText={errors.location?.message}
-                    />
-                  )}
-                  onChange={(_event, newValue) => {
-                    onChange(newValue || "");
-                  }}
-                  onBlur={onBlur}
-                  value={value || null}
-                />
-              )}
-            />
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "26px",
+              marginTop: "40px",
+            }}
+          >
             <Controller
               name="email"
               control={control}
@@ -344,27 +189,6 @@ export default function LoginPage() {
                 />
               )}
             />
-
-            <Controller
-              name="confirmPassword"
-              control={control}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextField
-                  color="primary"
-                  sx={{ width: "100%" }}
-                  id="filled-basic"
-                  label="Confirm Password"
-                  variant="outlined"
-                  size="small"
-                  type="password"
-                  onChange={onChange}
-                  onBlur={onBlur}
-                  value={value || ""}
-                  error={!!errors.confirmPassword}
-                  helperText={errors.confirmPassword?.message}
-                />
-              )}
-            />
           </Box>
           <Button
             title="submit"
@@ -383,7 +207,7 @@ export default function LoginPage() {
             {loading ? (
               <CircularProgress size={24} sx={{ color: "white" }} />
             ) : (
-              "SignUp"
+              "Login"
             )}
           </Button>
         </Box>
