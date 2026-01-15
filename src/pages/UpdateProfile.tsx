@@ -32,12 +32,16 @@ import { useState, useRef } from "react";
 import ResponsiveAppBar from "../components/AppNavbar";
 import { profileUpdateSchema } from "../schema/userScshema";
 import type { z } from "zod";
+import { updateProfile } from "../services/api";
+import imageCompression from "browser-image-compression";
+import { useNavigate } from "@tanstack/react-router";
 
 type ProfileFormData = z.infer<typeof profileUpdateSchema>;
 
 const steps = ["Personal Info", "Skills", "Terms & Conditions"];
 
 export default function UpdateProfile() {
+  const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
@@ -87,6 +91,97 @@ export default function UpdateProfile() {
     setSnackbar({ ...snackbar, open: false });
   };
 
+  const onSubmit = async (data: ProfileFormData) => {
+    if (!termsAccepted) {
+      showSnackbar("Please accept the Terms and Conditions", "error");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Create FormData for multipart/form-data upload
+      const formData = new FormData();
+
+      formData.append("firstName", data.firstName);
+      formData.append("lastName", data.lastName);
+      formData.append("userName", data.userName);
+      formData.append("dateOfBirth", new Date(data.dateOfBirth).toISOString());
+      formData.append("description", data.description || "");
+      if (data.primarySkill) {
+        formData.append("primarySkill", data.primarySkill);
+      }
+      formData.append("experience", data.experience.toString());
+
+      // Handle profile picture - compress and add as file if available
+      if (profilePicture) {
+        try {
+          // Compress the image before upload
+          const options = {
+            maxSizeMB: 0.5, // Maximum size in MB (500KB)
+            maxWidthOrHeight: 800, // Maximum width or height
+            useWebWorker: true, // Use web worker for better performance
+            fileType: "image/jpeg", // Convert to JPEG for better compression
+          };
+
+          const compressedFile = await imageCompression(
+            profilePicture,
+            options
+          );
+          formData.append(
+            "profilePicture",
+            compressedFile,
+            compressedFile.name
+          );
+        } catch (compressionError) {
+          console.error("Image compression error:", compressionError);
+          showSnackbar(
+            "Failed to compress image. Please try again with a smaller image.",
+            "error"
+          );
+          setLoading(false);
+          return;
+        }
+      } else if (data.profilePicture && !profilePicturePreview) {
+        // If there's an existing profile picture URL, send it as a string
+        formData.append("profilePicture", data.profilePicture);
+      }
+
+      console.log("Sending FormData with compressed image");
+
+      const response = await updateProfile(formData);
+
+      if (response.status === 200) {
+        if (response.data.message && response.data.userProfile) {
+          showSnackbar(
+            response.data.message || "User profile updated successfully",
+            "success"
+          );
+        } else {
+          showSnackbar("Profile updated successfully", "success");
+        }
+        // Navigate to home page on successful update
+        navigate({ replace: true, to: "/" });
+      }
+    } catch (error: any) {
+      let errorMessage = "Failed to update profile. Please try again.";
+
+      if (error.response?.status === 413) {
+        errorMessage =
+          "Image file is too large. Please select a smaller image or try again without a profile picture.";
+      } else {
+        errorMessage =
+          error.response?.data?.message ||
+          error.message ||
+          "Failed to update profile. Please try again.";
+      }
+
+      showSnackbar(errorMessage, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleNext = async () => {
     let fieldsToValidate: (keyof ProfileFormData)[] = [];
 
@@ -113,17 +208,45 @@ export default function UpdateProfile() {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
-  const handleProfilePictureChange = (
+  const handleProfilePictureChange = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (file) {
-      setProfilePicture(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfilePicturePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Check file size (limit to 10MB before compression)
+      if (file.size > 10 * 1024 * 1024) {
+        showSnackbar(
+          "Image is too large. Please select an image smaller than 10MB.",
+          "error"
+        );
+        return;
+      }
+
+      try {
+        // Compress the image for preview and store original for upload
+        const options = {
+          maxSizeMB: 0.5, // Maximum size in MB (500KB)
+          maxWidthOrHeight: 800, // Maximum width or height
+          useWebWorker: true, // Use web worker for better performance
+          fileType: "image/jpeg", // Convert to JPEG for better compression
+        };
+
+        const compressedFile = await imageCompression(file, options);
+        setProfilePicture(compressedFile);
+
+        // Create preview from compressed file
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setProfilePicturePreview(e.target?.result as string);
+        };
+        reader.onerror = () => {
+          showSnackbar("Failed to process image. Please try again.", "error");
+        };
+        reader.readAsDataURL(compressedFile);
+      } catch (error) {
+        console.error("Image compression error:", error);
+        showSnackbar("Failed to process image. Please try again.", "error");
+      }
     }
   };
 

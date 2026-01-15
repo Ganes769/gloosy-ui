@@ -3,6 +3,8 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import LoginPage from "./src/pages/Login";
 import SignUpPage from "./src/pages/SignUPage";
 import UpdateProfile from "./src/pages/UpdateProfile";
+import Dashboard from "./src/pages/Dashboard";
+import ProfilePage from "./src/pages/ProfilePage";
 
 // Root route component
 
@@ -35,7 +37,13 @@ const homeRoute = createRoute({
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  //   component: IndexComponent,
+  component: Dashboard,
+});
+
+const profileRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/profile",
+  component: ProfilePage,
 });
 
 export const routeTree = rootRoute.addChildren([
@@ -43,4 +51,5 @@ export const routeTree = rootRoute.addChildren([
   signupRoute,
   loginRoute,
   homeRoute,
+  profileRoute,
 ]);
