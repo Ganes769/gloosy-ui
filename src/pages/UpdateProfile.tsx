@@ -29,10 +29,8 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useRef } from "react";
-import { AxiosError } from "axios";
 import ResponsiveAppBar from "../components/AppNavbar";
 import { profileUpdateSchema } from "../schema/userScshema";
-import { updateProfile } from "../services/api";
 import type { z } from "zod";
 
 type ProfileFormData = z.infer<typeof profileUpdateSchema>;
@@ -131,74 +129,6 @@ export default function UpdateProfile() {
 
   const handleProfilePictureClick = () => {
     fileInputRef.current?.click();
-  };
-
-  const onSubmit = async (data: ProfileFormData) => {
-    if (!termsAccepted) {
-      showSnackbar("Please accept the terms and conditions", "error");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // Convert dateOfBirth string to Date object for backend
-      const submitData = {
-        ...data,
-        dateOfBirth: new Date(data.dateOfBirth),
-        experience: Number(data.experience),
-      };
-
-      console.log(submitData);
-
-      const response = await updateProfile(
-        submitData,
-        profilePicture || undefined
-      );
-
-      if (response.message) {
-        showSnackbar(response.message, "success");
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<{
-        message?: string;
-        details?: Array<{ field: string; message: string }>;
-      }>;
-
-      if (axiosError.response) {
-        const status = axiosError.response.status;
-        const errorData = axiosError.response.data;
-
-        switch (status) {
-          case 400:
-            if (errorData?.details && errorData.details.length > 0) {
-              showSnackbar(
-                errorData.details.map((d) => d.message).join(", "),
-                "error"
-              );
-            } else {
-              showSnackbar(errorData?.message || "Validation error", "error");
-            }
-            break;
-          case 401:
-            showSnackbar("Unauthorized. Please login again.", "error");
-            break;
-          case 409:
-            showSnackbar(errorData?.message || "Duplicate entry", "error");
-            break;
-          case 500:
-            showSnackbar("Server error. Please try again later.", "error");
-            break;
-          default:
-            showSnackbar(errorData?.message || "An error occurred", "error");
-            break;
-        }
-      } else {
-        showSnackbar("Network error. Please check your connection.", "error");
-      }
-      console.error("Profile update error:", error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   const renderStepContent = (step: number) => {
