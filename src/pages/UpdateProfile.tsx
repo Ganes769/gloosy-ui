@@ -28,11 +28,11 @@ import {
 } from "@mui/icons-material";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import ResponsiveAppBar from "../components/AppNavbar";
 import { profileUpdateSchema } from "../schema/userScshema";
 import type { z } from "zod";
-import { updateProfile } from "../services/api";
+import { updateProfile, getCurrentUser } from "../services/api";
 import imageCompression from "browser-image-compression";
 import { useNavigate } from "@tanstack/react-router";
 
@@ -44,6 +44,7 @@ export default function UpdateProfile() {
   const navigate = useNavigate();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [checkingProfile, setCheckingProfile] = useState(true);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] =
     useState<string>("");
@@ -58,6 +59,33 @@ export default function UpdateProfile() {
     message: "",
     severity: "info",
   });
+
+  // Check if user profile already exists and redirect to dashboard if it does
+  useEffect(() => {
+    const checkExistingProfile = async () => {
+      try {
+        const userData = await getCurrentUser();
+        // Check if essential profile fields exist
+        if (
+          userData?.firstName &&
+          userData?.lastName &&
+          userData?.userName &&
+          userData?.role
+        ) {
+          // Profile already exists, redirect to dashboard
+          navigate({ replace: true, to: "/" });
+          return;
+        }
+      } catch (error) {
+        // If there's an error fetching user data, continue to show the form
+        console.error("Error checking profile:", error);
+      } finally {
+        setCheckingProfile(false);
+      }
+    };
+
+    checkExistingProfile();
+  }, [navigate]);
 
   const {
     control,
@@ -558,6 +586,26 @@ By accepting these terms, you acknowledge that you have read, understood, and ag
         return null;
     }
   };
+
+  // Show loading state while checking profile
+  if (checkingProfile) {
+    return (
+      <>
+        <ResponsiveAppBar />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "calc(100vh - 64px)",
+            backgroundColor: "#F8FAFC",
+          }}
+        >
+          <CircularProgress />
+        </Box>
+      </>
+    );
+  }
 
   return (
     <>

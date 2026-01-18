@@ -10,11 +10,11 @@ import OnBoardlogo from "./OnBoardlogo";
 import { z } from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { login } from "../services/api";
 import { useState } from "react";
 import { AxiosError } from "axios";
 import { useNavigate } from "@tanstack/react-router";
 import { loginschema } from "../schema/userScshema";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -29,6 +29,7 @@ export default function LoginPage() {
   });
 
   const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
 
   const {
     control,
@@ -56,14 +57,9 @@ export default function LoginPage() {
   const onSubmit = async (data: z.infer<typeof loginschema>) => {
     setLoading(true);
     try {
-      const response = await login(data);
-      if (response.message) {
-        showSnackbar(response.message, "success");
-        if (response.token) {
-          localStorage.setItem("token", response.token);
-          navigate({ to: "/updateProfile" });
-        }
-      }
+      await authLogin(data.email, data.password);
+      showSnackbar("Login successful", "success");
+      navigate({ to: "/updateProfile" });
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
 

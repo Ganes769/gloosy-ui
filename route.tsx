@@ -5,8 +5,8 @@ import SignUpPage from "./src/pages/SignUPage";
 import UpdateProfile from "./src/pages/UpdateProfile";
 import Dashboard from "./src/pages/Dashboard";
 import ProfilePage from "./src/pages/ProfilePage";
+import { ProtectedRoute } from "./src/routes/ProtectedRoute";
 
-// Root route component
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -30,20 +30,31 @@ const signupRoute = createRoute({
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/updateProfile",
-  component: UpdateProfile,
+  component: () => (
+    <ProtectedRoute>
+      <UpdateProfile />
+    </ProtectedRoute>
+  ),
 });
 
-// Index route
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
-  component: Dashboard,
+  component: () => (
+    <ProtectedRoute>
+      <Dashboard />
+    </ProtectedRoute>
+  ),
 });
 
 const profileRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/profile",
-  component: ProfilePage,
+  component: () => (
+    <ProtectedRoute>
+      <ProfilePage />
+    </ProtectedRoute>
+  ),
 });
 
 export const routeTree = rootRoute.addChildren([
