@@ -54,12 +54,8 @@ export const updateProfile = async (data: any) => {
 };
 
 export const getCurrentUser = async () => {
-  try {
-    const response = await api.get(ME_URL);
-    return response.data;
-  } catch (error) {
-    throw error as AxiosError;
-  }
+  const response = await api.get(ME_URL);
+  return response.data;
 };
 
 export default api;

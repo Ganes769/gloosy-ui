@@ -12,12 +12,11 @@ import Button from "@mui/material/Button";
 import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import AdbIcon from "@mui/icons-material/Adb";
-import { useNavigate } from "@tanstack/react-router";
 
-const pages = ["Products", "Pricing", "Blog"];
+const pages = ["Dashboard", "Orders", "Analytics", " Earnings"];
+const settings = ["Profile", "Account", "Dashboard", "Logout"];
 
 function ResponsiveAppBar() {
-  const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
     null
   );
@@ -38,17 +37,6 @@ function ResponsiveAppBar() {
 
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
-  };
-
-  const handleProfileClick = () => {
-    setAnchorElUser(null);
-    navigate({ to: "/profile" });
-  };
-
-  const handleLogout = () => {
-    setAnchorElUser(null);
-    localStorage.removeItem("token");
-    navigate({ to: "/login" });
   };
 
   return (
@@ -165,18 +153,13 @@ function ResponsiveAppBar() {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
-              <MenuItem onClick={handleProfileClick}>
-                <Typography sx={{ textAlign: "center" }}>Profile</Typography>
-              </MenuItem>
-              <MenuItem onClick={handleCloseUserMenu}>
-                <Typography sx={{ textAlign: "center" }}>Account</Typography>
-              </MenuItem>
-              <MenuItem onClick={handleCloseUserMenu}>
-                <Typography sx={{ textAlign: "center" }}>Dashboard</Typography>
-              </MenuItem>
-              <MenuItem onClick={handleLogout}>
-                <Typography sx={{ textAlign: "center" }}>Logout</Typography>
-              </MenuItem>
+              {settings.map((setting) => (
+                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                  <Typography sx={{ textAlign: "center" }}>
+                    {setting}
+                  </Typography>
+                </MenuItem>
+              ))}
             </Menu>
           </Box>
         </Toolbar>
