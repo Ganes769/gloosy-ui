@@ -4,6 +4,7 @@ const SIGNUP_URL = "/api/auth/register";
 const LOGIN_URL = "/api/auth/login";
 const PROFILE_URL = "/profile";
 const ME_URL = "/api/me";
+const GET_CREATORS = "/getusers";
 
 const api = axios.create({
   baseURL: "https://gloosy-backend.vercel.app",
@@ -56,6 +57,21 @@ export const updateProfile = async (data: any) => {
 export const getCurrentUser = async () => {
   const response = await api.get(ME_URL);
   return response.data;
+};
+export const getAllCreator = async (page: number = 1, limit: number = 10) => {
+  try {
+    const response = await api.get(GET_CREATORS, {
+      params: {
+        page,
+        limit,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch creators", error);
+    throw error;
+  }
 };
 
 export default api;

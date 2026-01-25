@@ -50,7 +50,7 @@ export default function SignUPage() {
 
   const showSnackbar = (
     message: string,
-    severity: "success" | "error" | "warning" | "info"
+    severity: "success" | "error" | "warning" | "info",
   ) => {
     setSnackbar({ open: true, message, severity });
   };
@@ -103,7 +103,7 @@ export default function SignUPage() {
             if (errorData.details && errorData.details.length > 0) {
               showSnackbar(
                 errorData.details.map((d) => d.message).join(", "),
-                "error"
+                "error",
               );
             } else {
               showSnackbar(errorMessage, "error");
