@@ -207,7 +207,6 @@ export default function UserProfile() {
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
-  // Calculate display name
   const displayName = user.firstName + " " + user.lastName;
   const roleDisplay =
     user.role === "creator" ? "UGC Creator" : "Customer/Entrepreneur";
@@ -437,7 +436,7 @@ export default function UserProfile() {
                               ? null
                               : flexRender(
                                   header.column.columnDef.header,
-                                  header.getContext()
+                                  header.getContext(),
                                 )}
                           </TableCell>
                         ))}
@@ -470,7 +469,7 @@ export default function UserProfile() {
                           >
                             {flexRender(
                               cell.column.columnDef.cell,
-                              cell.getContext()
+                              cell.getContext(),
                             )}
                           </TableCell>
                         ))}
@@ -668,7 +667,7 @@ export default function UserProfile() {
                     >
                       <Icon fontSize="small" />
                     </IconButton>
-                  )
+                  ),
                 )}
               </Box>
             </Box>
@@ -694,7 +693,7 @@ export default function UserProfile() {
                     >
                       {item}
                     </Link>
-                  )
+                  ),
                 )}
               </Box>
             </Box>
@@ -720,7 +719,7 @@ export default function UserProfile() {
                     >
                       {item}
                     </Link>
-                  )
+                  ),
                 )}
               </Box>
             </Box>
@@ -746,7 +745,7 @@ export default function UserProfile() {
                     >
                       {item}
                     </Link>
-                  )
+                  ),
                 )}
               </Box>
             </Box>

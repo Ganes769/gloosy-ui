@@ -7,7 +7,6 @@ import Dashboard from "./src/pages/Dashboard";
 import ProfilePage from "./src/pages/ProfilePage";
 import { ProtectedRoute } from "./src/routes/ProtectedRoute";
 
-
 const rootRoute = createRootRoute({
   component: () => (
     <>
