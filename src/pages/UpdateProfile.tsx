@@ -60,32 +60,32 @@ export default function UpdateProfile() {
     severity: "info",
   });
 
-  // Check if user profile already exists and redirect to dashboard if it does
-  useEffect(() => {
-    const checkExistingProfile = async () => {
-      try {
-        const userData = await getCurrentUser();
-        // Check if essential profile fields exist
-        if (
-          userData?.firstName &&
-          userData?.lastName &&
-          userData?.userName &&
-          userData?.role
-        ) {
-          // Profile already exists, redirect to dashboard
-          navigate({ replace: true, to: "/" });
-          return;
-        }
-      } catch (error) {
-        // If there's an error fetching user data, continue to show the form
-        console.error("Error checking profile:", error);
-      } finally {
-        setCheckingProfile(false);
-      }
-    };
+  // // Check if user profile already exists and redirect to dashboard if it does
+  // useEffect(() => {
+  //   const checkExistingProfile = async () => {
+  //     try {
+  //       const userData = await getCurrentUser();
+  //       // Check if essential profile fields exist
+  //       if (
+  //         userData?.firstName &&
+  //         userData?.lastName &&
+  //         userData?.userName &&
+  //         userData?.role
+  //       ) {
+  //         // Profile already exists, redirect to dashboard
+  //         navigate({ replace: true, to: "/" });
+  //         return;
+  //       }
+  //     } catch (error) {
+  //       // If there's an error fetching user data, continue to show the form
+  //       console.error("Error checking profile:", error);
+  //     } finally {
+  //       setCheckingProfile(false);
+  //     }
+  //   };
 
-    checkExistingProfile();
-  }, [navigate]);
+  //   checkExistingProfile();
+  // }, [navigate]);
 
   const {
     control,
@@ -110,7 +110,7 @@ export default function UpdateProfile() {
 
   const showSnackbar = (
     message: string,
-    severity: "success" | "error" | "warning" | "info"
+    severity: "success" | "error" | "warning" | "info",
   ) => {
     setSnackbar({ open: true, message, severity });
   };
@@ -154,18 +154,18 @@ export default function UpdateProfile() {
 
           const compressedFile = await imageCompression(
             profilePicture,
-            options
+            options,
           );
           formData.append(
             "profilePicture",
             compressedFile,
-            compressedFile.name
+            compressedFile.name,
           );
         } catch (compressionError) {
           console.error("Image compression error:", compressionError);
           showSnackbar(
             "Failed to compress image. Please try again with a smaller image.",
-            "error"
+            "error",
           );
           setLoading(false);
           return;
@@ -183,7 +183,7 @@ export default function UpdateProfile() {
         if (response.data.message && response.data.userProfile) {
           showSnackbar(
             response.data.message || "User profile updated successfully",
-            "success"
+            "success",
           );
         } else {
           showSnackbar("Profile updated successfully", "success");
@@ -237,7 +237,7 @@ export default function UpdateProfile() {
   };
 
   const handleProfilePictureChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -245,7 +245,7 @@ export default function UpdateProfile() {
       if (file.size > 10 * 1024 * 1024) {
         showSnackbar(
           "Image is too large. Please select an image smaller than 10MB.",
-          "error"
+          "error",
         );
         return;
       }
@@ -587,25 +587,25 @@ By accepting these terms, you acknowledge that you have read, understood, and ag
     }
   };
 
-  // Show loading state while checking profile
-  if (checkingProfile) {
-    return (
-      <>
-        <ResponsiveAppBar />
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            minHeight: "calc(100vh - 64px)",
-            backgroundColor: "#F8FAFC",
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      </>
-    );
-  }
+  // // Show loading state while checking profile
+  // if (checkingProfile) {
+  //   return (
+  //     <>
+  //       <ResponsiveAppBar />
+  //       <Box
+  //         sx={{
+  //           display: "flex",
+  //           justifyContent: "center",
+  //           alignItems: "center",
+  //           minHeight: "calc(100vh - 64px)",
+  //           backgroundColor: "#F8FAFC",
+  //         }}
+  //       >
+  //         <CircularProgress />
+  //       </Box>
+  //     </>
+  //   );
+  // }
 
   return (
     <>

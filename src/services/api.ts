@@ -74,4 +74,20 @@ export const getAllCreator = async (page: number = 1, limit: number = 10) => {
   }
 };
 
+export const getAllCreators = async (limit: number = 1000) => {
+  try {
+    const response = await api.get(GET_CREATORS, {
+      params: {
+        page: 1,
+        limit,
+      },
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch all creators", error);
+    throw error;
+  }
+};
+
 export default api;

@@ -30,9 +30,9 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/updateProfile",
   component: () => (
-    <ProtectedRoute>
-      <UpdateProfile />
-    </ProtectedRoute>
+    // <ProtectedRoute>
+    <UpdateProfile />
+    // </ProtectedRoute>
   ),
 });
 
