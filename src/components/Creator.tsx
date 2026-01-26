@@ -8,8 +8,10 @@ import {
   Stack,
   TextField,
   InputAdornment,
+  IconButton,
 } from "@mui/material";
-import { Star, VerifiedUser, Search } from "@mui/icons-material";
+import { Star, VerifiedUser, Search, Message } from "@mui/icons-material";
+import { useNavigate } from "@tanstack/react-router";
 import { getAllCreator, getAllCreators } from "../services/api";
 
 export interface User {
@@ -32,6 +34,7 @@ interface CreatorProps {
 }
 
 export default function Creator({ users: usersProp }: CreatorProps = {}) {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>(usersProp || []);
   const [allUsers, setAllUsers] = useState<User[]>([]); // Store all users for search
   const [loading, setLoading] = useState(!usersProp);
@@ -167,6 +170,12 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
     return (
       <Card
         key={user._id}
+        onClick={() => {
+          navigate({
+            to: "/messages",
+            search: { userId: user._id },
+          });
+        }}
         sx={{
           width: "312px",
           height: "340px",
@@ -175,6 +184,7 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
           overflow: "hidden",
           display: "flex",
           flexDirection: "column",
+          cursor: "pointer",
           "&:hover": {
             boxShadow: "0 4px 16px rgba(0,0,0,0.15)",
           },
@@ -201,6 +211,30 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
               objectFit: "cover",
             }}
           />
+          {/* Message Icon Button */}
+          <IconButton
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate({
+                to: "/messages",
+                search: { userId: user._id },
+              });
+            }}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+              color: "#1976d2",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 1)",
+              },
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            }}
+            size="small"
+          >
+            <Message fontSize="small" />
+          </IconButton>
         </Box>
 
         {/* Content Section */}

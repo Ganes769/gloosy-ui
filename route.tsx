@@ -5,6 +5,7 @@ import SignUpPage from "./src/pages/SignUPage";
 import UpdateProfile from "./src/pages/UpdateProfile";
 import Dashboard from "./src/pages/Dashboard";
 import ProfilePage from "./src/pages/ProfilePage";
+import Messages from "./src/pages/Messages";
 import { ProtectedRoute } from "./src/routes/ProtectedRoute";
 
 const rootRoute = createRootRoute({
@@ -56,10 +57,22 @@ const profileRoute = createRoute({
   ),
 });
 
+const messagesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/messages",
+  validateSearch: (search: Record<string, unknown>) => {
+    return {
+      userId: (search.userId as string) || undefined,
+    };
+  },
+  component: Messages,
+});
+
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   signupRoute,
   loginRoute,
   homeRoute,
   profileRoute,
+  messagesRoute,
 ]);
