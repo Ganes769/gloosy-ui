@@ -19,7 +19,7 @@ import {
 } from "@mui/icons-material";
 import { useSearch } from "@tanstack/react-router";
 import type { User } from "../components/Creator";
-import { getAllCreators } from "../services/api";
+import { getAllCreators, sendDM } from "../services/api";
 
 interface Conversation {
   id: string;
@@ -37,31 +37,6 @@ interface Message {
   isIncoming: boolean;
   avatar: string;
 }
-
-const conversations: Conversation[] = [
-  {
-    id: "1",
-    name: "Abhi Bagchi",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    lastMessage: "Tomorrow definitely ssncsncks sncksncksnck sjcksjcksjck",
-    timestamp: "Tuesday 03:30 AM",
-    isOnline: true,
-  },
-  {
-    id: "2",
-    name: "Arlene McCoy",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    lastMessage: "Hey there!",
-    timestamp: "Monday 10:15 PM",
-  },
-  {
-    id: "3",
-    name: "John Doe",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    lastMessage: "See you tomorrow",
-    timestamp: "Monday 08:45 AM",
-  },
-];
 
 const messages: Message[] = [
   {
@@ -100,14 +75,18 @@ const messages: Message[] = [
     avatar: "https://i.pravatar.cc/150?img=4",
   },
 ];
-
+type SendDMPayload = {
+  receiverId: string; // the user you’re chatting with
+  text: string;
+  type?: "text";
+  clientMessageId?: string; // optional for optimistic UI
+};
 export default function Messages() {
   const search = useSearch({ from: "/messages" });
   const [selectedConversation, setSelectedConversation] = useState("1");
   const [messageText, setMessageText] = useState("");
-  const [allConversations, setAllConversations] = useState<Conversation[]>(conversations);
+  const [allConversations, setAllConversations] = useState<Conversation[]>([]);
 
-  // Fetch user data when userId is provided in search params
   useEffect(() => {
     const fetchUserAndCreateConversation = async () => {
       if (search.userId) {
@@ -116,7 +95,7 @@ export default function Messages() {
           const response = await getAllCreators(1000);
           const users = response.data || response || [];
           const user = users.find((u: User) => u._id === search.userId);
-
+          console.log("user", user);
           if (user) {
             // Check if conversation already exists using functional update
             setAllConversations((prev) => {
@@ -151,7 +130,27 @@ export default function Messages() {
     fetchUserAndCreateConversation();
   }, [search.userId]);
 
-  const selectedConv = allConversations.find((c) => c.id === selectedConversation);
+  const selectedConv = allConversations.find(
+    (c) => c.id === selectedConversation,
+  );
+
+  const handleSendMessage = async () => {
+    const text = messageText.trim();
+    if (!text || !selectedConversation) return;
+    const payload: SendDMPayload = {
+      receiverId: selectedConversation,
+      text,
+      type: "text",
+    };
+    console.log("payload", payload);
+    try {
+      await sendDM(payload);
+      setMessageText("");
+      // TODO: add the new message to the messages list or refetch conversation
+    } catch (error) {
+      console.error("Failed to send message", error);
+    }
+  };
 
   return (
     <Box
@@ -461,6 +460,12 @@ export default function Messages() {
                 placeholder="Type your Message"
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSendMessage();
+                  }
+                }}
                 variant="outlined"
                 size="small"
                 sx={{
@@ -480,6 +485,8 @@ export default function Messages() {
                 }}
               />
               <IconButton
+                onClick={handleSendMessage}
+                disabled={!messageText.trim() || !selectedConversation}
                 sx={{
                   backgroundColor: "#2F80ED",
                   color: "white",

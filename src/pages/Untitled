@@ -1,0 +1,6 @@
+type SendDMPayload = {
+  receiverId: string;      // the user you’re chatting with
+  text: string;
+  type?: "text";
+  clientMessageId?: string; // optional for optimistic UI
+};

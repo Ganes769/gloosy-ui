@@ -90,4 +90,14 @@ export const getAllCreators = async (limit: number = 1000) => {
   }
 };
 
+export const sendDM = async (payload: {
+  receiverId: string;
+  text: string;
+  type?: "text";
+  clientMessageId?: string;
+}) => {
+  const response = await api.post("/api/messages/dm", payload);
+  return response.data;
+};
+
 export default api;

@@ -36,15 +36,14 @@ interface CreatorProps {
 export default function Creator({ users: usersProp }: CreatorProps = {}) {
   const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>(usersProp || []);
-  const [allUsers, setAllUsers] = useState<User[]>([]); // Store all users for search
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(!usersProp);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchMode, setIsSearchMode] = useState(false);
-  const [apiTotalPages, setApiTotalPages] = useState(1); // Total pages from API when not searching
+  const [apiTotalPages, setApiTotalPages] = useState(1);
 
-  // Initialize with usersProp if provided
   useEffect(() => {
     if (usersProp) {
       setUsers(usersProp);
@@ -53,10 +52,9 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
     }
   }, [usersProp]);
 
-  // Fetch all users when search is first activated
   useEffect(() => {
     if (usersProp || !isSearchMode || allUsers.length > 0) {
-      return; // Skip if usersProp provided, not in search mode, or already have all users
+      return;
     }
 
     const fetchAllUsers = async () => {
@@ -76,12 +74,7 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
     fetchAllUsers();
   }, [isSearchMode, usersProp, allUsers.length]);
 
-  // Fetch paginated users when not searching
   useEffect(() => {
-    if (usersProp || isSearchMode || searchQuery.trim()) {
-      return; // Skip if usersProp provided or in search mode
-    }
-
     const fetchPaginatedUsers = async () => {
       try {
         setLoading(true);
@@ -89,7 +82,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
         const fetchedUsers = response.data || response || [];
         setUsers(fetchedUsers);
 
-        // Store total pages from API response
         if (response.totalPages) {
           setApiTotalPages(response.totalPages);
         } else if (response.total) {
@@ -108,8 +100,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
     fetchPaginatedUsers();
   }, [page, pageSize, usersProp, isSearchMode, searchQuery]);
 
-  // Filter users based on search query
-  // When searching, use allUsers; otherwise use the current page users
   const filteredUsers = useMemo(() => {
     const usersToFilter = isSearchMode || searchQuery.trim() ? allUsers : users;
 
@@ -134,7 +124,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
     });
   }, [users, allUsers, searchQuery, isSearchMode]);
 
-  // Calculate pagination for filtered users (when searching) or use API pagination (when not searching)
   const totalPages =
     isSearchMode || searchQuery.trim()
       ? Math.ceil(filteredUsers.length / pageSize)
@@ -142,12 +131,10 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
 
   const paginatedUsers = useMemo(() => {
     if (isSearchMode || searchQuery.trim()) {
-      // Client-side pagination for search results
       const startIndex = (page - 1) * pageSize;
       const endIndex = startIndex + pageSize;
       return filteredUsers.slice(startIndex, endIndex);
     } else {
-      // When not searching, users are already paginated from API
       return users;
     }
   }, [filteredUsers, users, page, pageSize, isSearchMode, searchQuery]);
@@ -160,11 +147,9 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
   }, [searchQuery]);
 
   const renderUserCard = (user: User) => {
-    // Calculate rating (using experience as base, capped at 5)
     const rating = Math.min(4.5, 3 + user.experience * 0.3);
     const reviewCount = Math.floor(user.experience * 50 + 100);
 
-    // Calculate price based on experience
     const price = user.experience * 1000;
 
     return (
@@ -190,7 +175,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
           },
         }}
       >
-        {/* Profile Image Section */}
         <Box
           sx={{
             width: "100%",
@@ -211,7 +195,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
               objectFit: "cover",
             }}
           />
-          {/* Message Icon Button */}
           <IconButton
             onClick={(e) => {
               e.stopPropagation();
@@ -237,7 +220,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
           </IconButton>
         </Box>
 
-        {/* Content Section */}
         <CardContent
           sx={{
             flex: 1,
@@ -247,7 +229,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
             gap: 1.5,
           }}
         >
-          {/* Title/Description */}
           <Typography
             variant="h6"
             sx={{
@@ -266,7 +247,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
               `${user.firstName} ${user.lastName} - ${user.primarySkill}`}
           </Typography>
 
-          {/* Username with Verified Badge */}
           <Box
             sx={{
               display: "flex",
@@ -292,7 +272,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
             />
           </Box>
 
-          {/* Rating and Price Row */}
           <Box
             sx={{
               display: "flex",
@@ -301,7 +280,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
               mt: "auto",
             }}
           >
-            {/* Rating */}
             <Box
               sx={{
                 display: "flex",
@@ -327,7 +305,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
               </Typography>
             </Box>
 
-            {/* Price */}
             <Typography
               variant="h6"
               sx={{
@@ -373,7 +350,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
         Creators
       </Typography>
 
-      {/* Search Bar */}
       <Box
         sx={{
           width: "100%",
@@ -416,7 +392,6 @@ export default function Creator({ users: usersProp }: CreatorProps = {}) {
         />
       </Box>
 
-      {/* Results count */}
       {searchQuery && (
         <Typography
           variant="body2"
